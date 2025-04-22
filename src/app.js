@@ -4,30 +4,22 @@ const express = require("express");
 
 const app = express();
 
-app.use(
-  "/user",
-  (req, res, next) => {
-    console.log("Handling the route");
-    next();
-    //res.send("response 1"); // send the response at this point , it will not go any further
-  },
-  (req, res,next) => {
-    console.log("Handling the route 2");
-    //res.send("Response 2");
-    next()
-  },
-  (req, res,next) => {
-    console.log("Handling the route 3");
-    //res.send("Response 3");
-    next()
-  },
-  (req, res,next) => {
-    console.log("Handling the route 4");
-    res.send("Response 4");
-  }
+app.get("/user", (req, res, next) => {
+  console.log("Handling the route");
+  next();
+  res.send("response 1"); // send the response at this point , it will not go any further
+});
+
+app.get('/user',(req,res,next) => {
+    console.log("Handling the route user2")
+    res.send("2nd route handler") // this works exactly the same way 
+})
 
 
-);
+
+
+
+
 
 // if u are using next and res both it will throw an error that u cant send the res twice.
 
