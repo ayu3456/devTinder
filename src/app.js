@@ -4,6 +4,8 @@ const express = require("express");
 
 const app = express();
 
+// get /users => middleware chain => request handler 
+
 app.get("/user", (req, res, next) => {
   console.log("Handling the route");
   next();
