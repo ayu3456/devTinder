@@ -1,26 +1,34 @@
 // create server
 const express = require("express");
+const connectdb = require("./config/database");
+const User = require("./models/user");
 const app = express();
 
-app.get("/getUserData", (req, res) => {
+app.post("/signup", async (req, res) => {
+  const userObj = {
+    firstName: "virat",
+    lastName: "kohli",
+    emailId: "virat@gmail.com",
+    password: "virat@123",
+  };
+
+  // Creating a new Instance of the user model
+  const user = new User(userObj);
+
   try {
-    // Logic of DB Call and get some user data agar error hai to try - catch block ka use karte hai
-    throw new Error("Kuch kam nahi ho raha");
-
-    res.send("User data sent");
+    await user.save(); // this return us a promise
+    res.send("user added successfully");
   } catch (err) {
-    res.status(500).send("Fir se fat gaya");
+    console.error(err);
+    res.status(500).send("Error saving the user:" + err.message);
   }
 });
 
-app.use("/", (err, req, res, next) => {
-  if (err) {
-    //log error
-
-    res.status(500).send("Error aa gaya bro!");
-  }
-});
-
-app.listen(3000, () => {
-  console.log("Server is successfully running on port 3000");
-});
+connectdb()
+  .then(() => {
+    console.log("Database connected Successfully");
+    app.listen(3000, () => {
+      console.log("Server is successfully running on port 3000");
+    });
+  })
+  .catch((err) => console.error("Database cannot be connected"));
