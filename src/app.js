@@ -72,22 +72,40 @@ app.delete("/user", async (req, res) => {
 app.patch("/user", async (req, res) => {
   const data = req.body;
   const userId = req.body.userId;
+  console.log(data)
+
+  
 
   try {
-    const user = await User.findByIdAndUpdate({ _id: userId }, data, {returnDocument:"after" , runValidators:true});
-   // const user = await User.findByIdAndUpdate(userId, data); you can do this too. 
-    // console.log(user) // sahi aa raha output.
+    const ALLOWED_UPDATES = [
+        'photoUrl','about','gender','age','userId','skills','firstName'
+      ]
+    
+      const isUpdateAllowed = Object.keys(data).every(k => ALLOWED_UPDATES.includes(k))
+      console.log(isUpdateAllowed);
+    
+      if(!isUpdateAllowed){
+        throw new Error
+      }
 
+      if(data.skills && data.skills.length > 10){
+        throw new Error("Skills can't be more than 10 ")
+      }
+
+
+    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+    // const user = await User.findByIdAndUpdate(userId, data); you can do this too.
+    //console.log(user) // sahi aa raha output.
 
     res.send("Updated Succuessfully");
-  } catch (error) {
-    res.status(500).send("Update Failed:" + error.message);
+  } catch (err) {
+    console.error(err.message)
+    res.status(500).send("Update Failed:" + err.message);
   }
 });
-
-
-
-
 
 connectdb()
   .then(() => {
