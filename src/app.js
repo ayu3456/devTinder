@@ -3,23 +3,60 @@ const express = require("express");
 const connectdb = require("./config/database");
 const User = require("./models/user");
 const app = express();
+const bcrypt = require("bcrypt");
+
+const { validateSignUpData } = require("./utils/validation");
 
 app.use(express.json()); // it will activated for all the routes  It read the req and convert into a js object.
 
 app.post("/signup", async (req, res) => {
-  //console.log(req.body);
-
-  const userObj = req.body;
-
-  // Creating a new Instance of the user model
-  const user = new User(userObj);
-
   try {
+    // validate the data.
+    validateSignUpData(req);
+    // Encrypt the password
+
+    const { firstName, lastName, emailId, password } = req.body;
+
+    const hashPassword = await bcrypt.hash(password, 10); // it will return a promise
+
+    console.log(hashPassword);
+
+    // store the user
+
+    // Creating a new Instance of the user model
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: hashPassword,
+    });
+
     await user.save(); // this return us a promise
-    res.send("User added successfully");
+    res.status(200).send("User added successfully");
   } catch (err) {
     console.error(err);
     res.status(500).send("Error saving the User:" + err.message);
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+
+    const user = await User.findOne(emailId);
+    if (!user) {
+      throw new Error("Invalid Credintials");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (isPasswordValid) {
+      res.send("Login Successful");
+    } else {
+      throw new Error("Invalid Credintials");
+    }
+  } catch (error) {
+    res.status(500).send("Error:" + error.message);
   }
 });
 
@@ -72,26 +109,31 @@ app.delete("/user", async (req, res) => {
 app.patch("/user", async (req, res) => {
   const data = req.body;
   const userId = req.body.userId;
-  console.log(data)
-
-  
+  console.log(data);
 
   try {
     const ALLOWED_UPDATES = [
-        'photoUrl','about','gender','age','userId','skills','firstName'
-      ]
-    
-      const isUpdateAllowed = Object.keys(data).every(k => ALLOWED_UPDATES.includes(k))
-      console.log(isUpdateAllowed);
-    
-      if(!isUpdateAllowed){
-        throw new Error
-      }
+      "photoUrl",
+      "about",
+      "gender",
+      "age",
+      "userId",
+      "skills",
+      "firstName",
+    ];
 
-      if(data.skills && data.skills.length > 10){
-        throw new Error("Skills can't be more than 10 ")
-      }
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+    console.log(isUpdateAllowed);
 
+    if (!isUpdateAllowed) {
+      throw new Error();
+    }
+
+    if (data.skills && data.skills.length > 10) {
+      throw new Error("Skills can't be more than 10 ");
+    }
 
     const user = await User.findByIdAndUpdate({ _id: userId }, data, {
       returnDocument: "after",
@@ -102,7 +144,7 @@ app.patch("/user", async (req, res) => {
 
     res.send("Updated Succuessfully");
   } catch (err) {
-    console.error(err.message)
+    console.error(err.message);
     res.status(500).send("Update Failed:" + err.message);
   }
 });
