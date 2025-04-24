@@ -56,6 +56,36 @@ app.get("/feed", async (req, res) => {
   }
 });
 
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+
+  try {
+    await User.findByIdAndDelete(userId);
+
+    res.send("user deleted successfully");
+  } catch (error) {
+    console.error("deleted nahi hua");
+    res.send("deleted nahi hua");
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  const data = req.body;
+  const userId = req.body.userId;
+
+  try {
+    const user = await User.findByIdAndUpdate({ _id: userId }, data, {returnDocument:"after"});
+   // const user = await User.findByIdAndUpdate(userId, data); you can do this too. 
+    // console.log(user) // sahi aa raha output.
+
+
+    res.send("Updated Succuessfully");
+  } catch (error) {
+    console.error("update nahi hua");
+    res.send("update nahi hua");
+  }
+});
+
 
 
 connectdb()
