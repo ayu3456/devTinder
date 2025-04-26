@@ -61,7 +61,10 @@ app.post("/login", async (req, res) => {
     if (isPasswordValid) {
       // create a jwt token
 
-      const token = await jwt.sign({ _id: user._id }, "ayush",{expiresIn:"1d"});
+      // const token = await jwt.sign({ _id: user._id }, "ayush",{expiresIn:"1d"}); // yaha par token sign in karne ki bajaye schema me add kar do. 
+
+      const token = await user.getJWT();
+      // add handlers method to offload a lot of stuff.
       //console.log(token)
 
       // Add the token to cookie and send the response back to user
